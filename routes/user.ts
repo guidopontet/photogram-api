@@ -72,10 +72,30 @@ userRoutes.post( '/', (req: Request, res: Response) => {
 
 // Update user
 userRoutes.post( '/update', validateToken, (req: any, res: Response) => {
-  res.json({
-    ok: true,
-    user: req.user,
-  })
-})
+  const user = {
+    name: req.body.name || req.user.name,
+    email: req.body.email || req.user.email,
+    avatar: req.body.avatar || req.user.avatar,
+  };
+
+  User.findByIdAndUpdate(req.user._id, user, { new: true }, (err, userUpdated) => {
+    if (err) throw err;
+
+    if (!userUpdated) return res.json({ ok: false, message: 'No existe un usuario con ese ID'});
+
+    const token = Token.getJwtToken({
+      _id: userUpdated._id,
+      name: userUpdated.name,
+      email: userUpdated.email,
+      avatar: userUpdated.avatar,
+    });
+
+    res.json({
+      ok: true,
+      user: userUpdated,
+      token,
+    })
+  });
+});
 
 export default userRoutes;

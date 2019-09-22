@@ -2,10 +2,11 @@ import { Router, Request, Response } from "express";
 import { User } from "../models/user.model";
 import bcrypt from "bcrypt";
 import Token from "../lib/token";
+import { validateToken } from "../middlewares/auth";
 
 const userRoutes = Router();
 
-// Login
+// Login user
 userRoutes.post( '/login', (req: Request, res: Response) => {
   const body = req.body;
 
@@ -68,5 +69,13 @@ userRoutes.post( '/', (req: Request, res: Response) => {
 
 
 });
+
+// Update user
+userRoutes.post( '/update', validateToken, (req: any, res: Response) => {
+  res.json({
+    ok: true,
+    user: req.user,
+  })
+})
 
 export default userRoutes;

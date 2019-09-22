@@ -1,4 +1,4 @@
-import Server from "./classes/server";
+import Server from "./lib/server";
 import userRoutes from "./routes/user";
 import mongoose from "mongoose";
 import bodyParser from "body-parser";

@@ -1,4 +1,5 @@
 import { Schema, model, Document } from "mongoose";
+import bcrypt from "bcrypt";
 
 const userSchema = new Schema({
   name: {
@@ -20,11 +21,17 @@ const userSchema = new Schema({
   }
 });
 
+userSchema.method('comparePassword', function(password: string = ''): boolean {
+  return bcrypt.compareSync( password, this.password );
+});
+
 interface IUser extends Document {
   name: string,
   email: string,
   password: string,
   avatar: string,
+
+  comparePassword( password: string ): boolean;
 }
 
 export const User = model<IUser>( 'User', userSchema );

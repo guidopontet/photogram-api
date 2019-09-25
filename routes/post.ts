@@ -1,8 +1,11 @@
 import { Router, Request, Response } from "express";
 import { validateToken } from "../middlewares/auth";
 import { Post } from "../models/post.model";
+import { FileUpload } from "../interfaces/file-upload";
+import FileSystem from "../lib/file-system";
 
 const postRoutes = Router();
+const fileSystem = new FileSystem();
 
 // Get posts
 postRoutes.get('/', async (req: any, res: Response) => {
@@ -28,6 +31,8 @@ postRoutes.post('/', validateToken, (req: any, res: Response) => {
   const body = req.body;
   body.user = req.user._id;
 
+  body.images = fileSystem.moveTmptoPost(req.user._id);
+
   Post.create(body)
     .then(async newPost => {
       await newPost.populate('user', '-password').execPopulate();
@@ -43,6 +48,39 @@ postRoutes.post('/', validateToken, (req: any, res: Response) => {
         err,
       })
     });
+});
+
+// Upload files
+postRoutes.post('/upload', validateToken, async (req: any, res: Response) => {
+  if (!req.files) {
+    return res.status(400).json({
+      ok: false,
+      message: 'No se subió ningún archivo',
+    });
+  }
+
+  const file: FileUpload = req.files.image;
+
+  if (!file) {
+    return res.status(400).json({
+      ok: false,
+      message: 'Error al subir archivo',
+    });
+  }
+
+  if (!file.mimetype.includes('image')) {
+    return res.status(400).json({
+      ok: false,
+      message: 'Solamente pueden subirse imágenes',
+    });
+  }
+
+  await fileSystem.saveTmpImage(file, req.user._id);
+
+  res.json({
+    ok: true,
+    file: file.mimetype,
+  })
 });
 
 export default postRoutes;

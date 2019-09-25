@@ -4,6 +4,8 @@ import fs from "fs";
 import { FileUpload } from "../interfaces/file-upload";
 import uniqid from "uniqid";
 
+const DEFAULT_IMAGE = path.resolve(__dirname, '../assets/images/no-image.jpg');
+
 export default class FileSystem {
   constructor() {};
 
@@ -58,5 +60,12 @@ export default class FileSystem {
     const userPathTmp = path.resolve(__dirname, '../uploads', userId, 'tmp');
 
     return fs.readdirSync(userPathTmp) || [];
+  }
+
+  getImagePath(userId: string, image: string) {
+    const imagePath = path.resolve(__dirname, '../uploads', userId, 'posts', image);
+    const exist = fs.existsSync(imagePath);
+
+    return exist ? imagePath : DEFAULT_IMAGE;
   }
 }
